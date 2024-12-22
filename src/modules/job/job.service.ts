@@ -8,24 +8,8 @@ import { UpdateJobPostDto } from 'src/dto/update.job.dto';
 export class JobService {
     constructor(@InjectModel(JobPost) private readonly jobPostModel: typeof JobPost) { }
 
-    // async createJobPost(createJobDto: CreateJobDto, companyId: string) {
-    //     if (createJobDto.applicationDeadline) {
-    //         const currentDate = new Date();
-    //         if (createJobDto.applicationDeadline < currentDate) {
-    //             throw new BadRequestException(`Application deadline cannot be in the past`);
-    //         }
-    //     }
-    //     const job = await this.jobPostModel.create({
-    //         ...createJobDto,
-    //         companyId,
-    //     });
-
-    //     return job;
-    // }
-
     async createJobPost(createJobDto: CreateJobDto, companyId: string) {
         const { title, description, location } = createJobDto;
-        // Check if a similar job post already exists
         const existingJob = await this.jobPostModel.findOne({
             where: {
                 title,
@@ -39,7 +23,7 @@ export class JobService {
                 `A job with the same title, description, location, and company already exists.`
             );
         }
-        // Validate application deadline
+
         if (createJobDto.applicationDeadline) {
             const currentDate = new Date();
             if (createJobDto.applicationDeadline < currentDate) {
@@ -48,7 +32,7 @@ export class JobService {
                 );
             }
         }
-        // Create the job post
+
         const job = await this.jobPostModel.create({
             ...createJobDto,
             companyId,
