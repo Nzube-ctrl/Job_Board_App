@@ -13,15 +13,16 @@ import { UserModule } from './modules/user/user.module';
 import { CompanyModule } from './modules/company/company.module';
 import { JobModule } from './modules/job/job.module';
 import { ApplicationModule } from './modules/application/application.module';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { seconds, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseLoggerService } from './database';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 10
-    }]),
+    ThrottlerModule.forRoot({
+      throttlers: [{ limit: 4, ttl: seconds(10) }],
+      errorMessage: `Wow! slow down!`
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env`,
@@ -50,6 +51,9 @@ import { DatabaseLoggerService } from './database';
       inject: [ConfigService]
     }), AuthModule, UserModule, CompanyModule, JobModule, ApplicationModule],
   controllers: [AppController],
-  providers: [AppService, DatabaseLoggerService],
+  providers: [AppService, DatabaseLoggerService, {
+    provide: APP_GUARD,
+    useClass: ThrottlerGuard
+  }],
 })
 export class AppModule { }
